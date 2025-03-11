@@ -1,19 +1,21 @@
 <template>
-  <div class="login-container">
-    <img class="logo-login" src="../assets/logo.jpg" alt="Logo" />
-    <form @submit.prevent="handleLogin">
-      <div>
-        <label for="username">Usuário:</label>
-        <input type="text" id="username" v-model="username" />
-      </div>
+  <div class="login-wrapper">
+    <div class="login-container">
+      <img class="logo-login" src="../assets/logo.jpg" alt="Logo" />
+      <form @submit.prevent="handleLogin">
+        <div>
+          <label for="username">Usuário:</label>
+          <input type="text" id="username" v-model="username" />
+        </div>
 
-      <div>
-        <label for="password">Senha:</label>
-        <input type="password" id="password" v-model="password" />
-      </div>
+        <div>
+          <label for="password">Senha:</label>
+          <input type="password" id="password" v-model="password" />
+        </div>
 
-      <button type="submit">Entrar</button>
-    </form>
+        <button type="submit">Entrar</button>
+      </form>
+    </div>
   </div>
 </template>
 
@@ -21,7 +23,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
-// Import JSON 
+// Import JSON com usuários de exemplo
 import loginMockDataJSON from '@/assets/login-mock.json'
 
 const username = ref('')
@@ -30,16 +32,15 @@ const router = useRouter()
 
 const loginMockData = loginMockDataJSON
 
-// Função de login
+// Função de login simples (mock)
 const handleLogin = () => {
-  // Verifique se o loginMockData foi carregado corretamente
-  console.log('Dados do loginMockData:', loginMockData)
-
-  // Verifica se o usuário e senha existem no JSON
-  const user = loginMockData.find(user => user.username === username.value && user.password === password.value)
+  // Checa se o usuário e senha existem no JSON
+  const user = loginMockData.find(
+    user => user.username === username.value && user.password === password.value
+  )
 
   if (user) {
-    // Se o usuário e senha forem encontrados, redireciona para a página de clientes
+    // Se encontrou, redireciona
     router.push('/clientes')
   } else {
     alert('Usuário ou senha inválidos!')
@@ -48,14 +49,15 @@ const handleLogin = () => {
 </script>
 
 <style scoped>
-body {
-  background-color: #A50638; /* Cor de fundo desejada */
-  margin: 0;
-  height: 100vh;
+
+.login-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
+  height: 100vh; 
+  background-color: #A50638; 
 }
+
 
 .login-container {
   background-color: white;
@@ -70,22 +72,26 @@ body {
   border-radius: 10px;
 }
 
+
 .logo-login {
   height: 120px;
   border-radius: 5px;
   margin-bottom: 30px;
 }
 
+
 .login-container div {
   margin-bottom: 25px;
   width: 100%;
 }
+
 
 .login-container label {
   font-size: 16px;
   margin-bottom: 8px;
   display: block;
 }
+
 
 .login-container input {
   width: 100%;
@@ -94,6 +100,7 @@ body {
   border: 1px solid #ccc;
   font-size: 16px;
 }
+
 
 .login-container button {
   background-color: #A50638;

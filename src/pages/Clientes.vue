@@ -1,257 +1,503 @@
 <template>
-  <div>
+  <div class="clientes-container">
+    <!-- Cabeçalho -->
     <header class="header">
-      <h1>Cadastro de Clientes</h1>
-      <nav>
-        <button @click="showForm = !showForm">Cadastrar Cliente</button>
-        <button @click="loadClients">Listar Clientes</button>
-      </nav>
+      <img src="../assets/logo.jpg" alt="Logo" class="logo-clientes" />
+      <div class="header-text">
+        <h1>Gestão de Clientes</h1>
+        <h2>{{ isEditando ? 'Editar Cliente' : 'Novo Cliente' }}</h2> <!-- Subtítulo -->
+      </div>
     </header>
 
-    <div v-if="showForm">
-      <h2>{{ isEdit ? 'Editar' : 'Cadastrar' }} Cliente</h2>
-      <form @submit.prevent="isEdit ? updateClient() : addClient">
-        <!-- Dados do Cliente -->
-        <div>
-          <label for="cpf">CPF:</label>
-          <input type="text" v-model="client.cpf" id="cpf" required />
+    <!-- Conteúdo -->
+    <div class="clientes-content">
+      <!-- Formulário de cadastro/edição -->
+      <form @submit.prevent="handleSubmit">
+        <div class="form-group">
+          <label>Nome:</label>
+          <input v-model="cliente.nome" required minlength="3" />
         </div>
-        <div>
-          <label for="nome">Nome:</label>
-          <input type="text" v-model="client.nome" id="nome" required />
+
+        <div class="form-group">
+          <label>CPF:</label>
+          <input v-model="cliente.cpf" @blur="validarCpf" required />
         </div>
-        <div>
-          <label for="dataNascimento">Data de Nascimento:</label>
-          <input type="date" v-model="client.dataNascimento" id="dataNascimento" required />
+
+        <div class="form-group">
+          <label>RG:</label>
+          <input v-model="cliente.rg" />
         </div>
-        <div>
-          <label for="sexo">Sexo:</label>
-          <select v-model="client.sexo" id="sexo" required>
+
+        <div class="form-group">
+          <label>Data Expedição:</label>
+          <input type="date" v-model="cliente.dataExpedicao" />
+        </div>
+
+        <div class="form-group">
+          <label>Órgão Expedição:</label>
+          <input v-model="cliente.orgaoExpedicao" />
+        </div>
+
+        <div class="form-group">
+          <label>Data Nascimento:</label>
+          <input type="date" v-model="cliente.dataNascimento" @blur="validarDataNascimento" required />
+        </div>
+
+        <div class="form-group">
+          <label>Sexo:</label>
+          <select v-model="cliente.sexo" required>
+            <option value="">Selecione</option>
             <option value="M">Masculino</option>
             <option value="F">Feminino</option>
           </select>
         </div>
 
-        <!-- Endereço do Cliente -->
-        <h3>Endereço</h3>
-        <div>
-          <label for="cep">CEP:</label>
-          <input type="text" v-model="client.endereco.cep" id="cep" required />
+        <div class="form-group">
+          <label>Estado Civil:</label>
+          <select v-model="cliente.estadoCivil" required>
+            <option value="">Selecione</option>
+            <option value="Solteiro(a)">Solteiro(a)</option>
+            <option value="Casado(a)">Casado(a)</option>
+            <option value="Divorciado(a)">Divorciado(a)</option>
+          </select>
         </div>
-        <div>
-          <label for="logradouro">Logradouro:</label>
-          <input type="text" v-model="client.endereco.logradouro" id="logradouro" required />
-        </div>
-        <div>
-          <label for="numero">Número:</label>
-          <input type="text" v-model="client.endereco.numero" id="numero" required />
-        </div>
-        <div>
-          <label for="bairro">Bairro:</label>
-          <input type="text" v-model="client.endereco.bairro" id="bairro" required />
-        </div>
-        <div>
-          <label for="cidade">Cidade:</label>
-          <input type="text" v-model="client.endereco.cidade" id="cidade" required />
-        </div>
-        <div>
-          <label for="uf">UF:</label>
-          <input type="text" v-model="client.endereco.uf" id="uf" required />
-        </div>
-        <button type="submit">{{ isEdit ? 'Atualizar' : 'Cadastrar' }}</button>
-      </form>
-    </div>
 
-    <div v-if="clients.length > 0">
-      <h2>Clientes Cadastrados</h2>
-      <input type="text" v-model="filter" placeholder="Buscar por nome ou CPF" />
-      <table>
+        <!-- Endereço -->
+        <div class="form-group">
+          <label>CEP:</label>
+          <input v-model="cliente.endereco.cep" @blur="buscarCep" maxlength="8" required />
+        </div>
+
+        <div class="form-group">
+          <label>Logradouro:</label>
+          <input v-model="cliente.endereco.logradouro" required />
+        </div>
+
+        <div class="form-group">
+          <label>Número:</label>
+          <input v-model="cliente.endereco.numero" required />
+        </div>
+
+        <div class="form-group">
+          <label>Complemento:</label>
+          <input v-model="cliente.endereco.complemento" />
+        </div>
+
+        <div class="form-group">
+          <label>Bairro:</label>
+          <input v-model="cliente.endereco.bairro" required />
+        </div>
+
+        <div class="form-group">
+          <label>UF:</label>
+          <input v-model="cliente.endereco.uf" maxlength="2" required />
+        </div>
+
+        <div class="form-group">
+          <label>Cidade:</label>
+          <input v-model="cliente.endereco.cidade" required />
+        </div>
+
+        <button type="submit">{{ isEditando ? 'Salvar Alterações' : 'Adicionar Cliente' }}</button>
+      </form>
+
+      <!-- Filtros -->
+      <div class="filtros">
+        <input type="text" v-model="filtroNome" placeholder="Filtrar por Nome" />
+        <input type="text" v-model="filtroCpf" placeholder="Filtrar por CPF" />
+        <button @click="filtrarClientes">Filtrar</button>
+        <button @click="resetarFiltro">Limpar</button>
+      </div>
+
+      <!-- Tabela de clientes -->
+      <table class="clientes-table">
         <thead>
           <tr>
             <th>Nome</th>
             <th>CPF</th>
-            <th>Data de Nascimento</th>
+            <th>Sexo</th>
             <th>Ações</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="client in filteredClients" :key="client.clienteId">
-            <td>{{ client.nome }}</td>
-            <td>{{ client.cpf }}</td>
-            <td>{{ client.dataNascimento }}</td>
+          <tr v-for="cliente in clientesFiltrados" :key="cliente.clienteId">
+            <td>{{ cliente.nome }}</td>
+            <td>{{ cliente.cpf }}</td>
+            <td>{{ cliente.sexo }}</td>
             <td>
-              <button @click="editClient(client)">Editar</button>
-              <button @click="deleteClient(client.clienteId)">Excluir</button>
+              <button @click="editarCliente(cliente)">Editar</button>
+              <button @click="excluirCliente(cliente.clienteId)">Excluir</button>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
 
+    <!-- Rodapé -->
     <footer class="footer">
-      <p>&copy; 2025 Fundação Carlos Chagas</p>
+      <p>&copy; 2024 - Fundação Carlos Chagas</p>
     </footer>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import axios from 'axios'
 
-const apiUrl = 'http://dotnetapis.netservices.fcc.org.br/webapi/testecandidato/v1/Cliente'
+// Endereço da API
+const API_BASE = 'http://dotnetapis.netservices.fcc.org.br/webapi/testecandidato/v1/Cliente'
 
-const showForm = ref(false)
-const isEdit = ref(false)
-const client = ref({
+// Cliente e lista
+const cliente = reactive({
+  clienteId: 0,
   cpf: '',
   nome: '',
+  rg: '',
+  dataExpedicao: '',
+  orgaoExpedicao: '',
   dataNascimento: '',
   sexo: '',
+  estadoCivil: '',
   endereco: {
+    enderecoId: 0,
     cep: '',
     logradouro: '',
     numero: '',
+    complemento: '',
     bairro: '',
     cidade: '',
     uf: ''
   }
 })
-const clients = ref([])
-const filter = ref('')
 
-const loadClients = async () => {
+const clientes = ref([])
+const isEditando = ref(false)
+const filtroNome = ref('')
+const filtroCpf = ref('')
+
+// Buscar todos os clientes
+const listarClientes = async () => {
   try {
-    const response = await axios.get(`${apiUrl}/Listar`)
-    clients.value = response.data
+    const response = await axios.get(`${API_BASE}/Listar`)
+    clientes.value = response.data
   } catch (error) {
-    console.error('Erro ao carregar clientes', error)
+    console.error('Erro ao listar clientes:', error)
   }
 }
 
-const addClient = async () => {
+// Adicionar ou alterar cliente
+const handleSubmit = async () => {
   try {
-    const response = await axios.post(`${apiUrl}/Adicionar`, client.value)
-    alert('Cliente cadastrado com sucesso!')
-    loadClients()
-    resetForm()
+    if (!validarCpf() || !validarDataNascimento()) return
+
+    const data = {
+      clienteId: cliente.clienteId,
+      cpf: cliente.cpf,
+      nome: cliente.nome,
+      rg: cliente.rg,
+      dataExpedicao: cliente.dataExpedicao,
+      orgaoExpedicao: cliente.orgaoExpedicao,
+      dataNascimento: cliente.dataNascimento,
+      sexo: cliente.sexo,
+      estadoCivil: cliente.estadoCivil,
+      endereco: cliente.endereco
+    }
+
+    if (isEditando.value) {
+      await axios.put(`${API_BASE}/Alterar`, data)
+      alert('Cliente alterado com sucesso!')
+    } else {
+      await axios.post(`${API_BASE}/Adicionar`, data)
+      alert('Cliente adicionado com sucesso!')
+    }
+    listarClientes()
+    resetarFormulario()
   } catch (error) {
-    alert('Erro ao cadastrar cliente.')
-    console.error('Erro ao adicionar cliente:', error)
+    console.error('Erro ao salvar cliente:', error)
+    alert('Erro ao salvar cliente. Tente novamente mais tarde.')
   }
 }
 
-const updateClient = async () => {
-  try {
-    const response = await axios.put(`${apiUrl}/Alterar`, client.value)
-    alert('Cliente atualizado com sucesso!')
-    loadClients()
-    resetForm()
-  } catch (error) {
-    alert('Erro ao atualizar cliente.')
-    console.error('Erro ao atualizar cliente:', error)
-  }
+// Editar cliente
+const editarCliente = (c) => {
+  Object.assign(cliente, JSON.parse(JSON.stringify(c)))
+  isEditando.value = true
 }
 
-const deleteClient = async (clientId) => {
+// Excluir cliente
+const excluirCliente = async (id) => {
+  if (!confirm('Tem certeza que deseja excluir?')) return
   try {
-    const response = await axios.delete(`${apiUrl}/Excluir/${clientId}`)
+    await axios.delete(`${API_BASE}/Excluir/${id}`)
     alert('Cliente excluído com sucesso!')
-    loadClients()
+    listarClientes()
   } catch (error) {
-    alert('Erro ao excluir cliente.')
     console.error('Erro ao excluir cliente:', error)
   }
 }
 
-const editClient = (clientData) => {
-  client.value = { ...clientData, endereco: { ...clientData.endereco } }
-  isEdit.value = true
-  showForm.value = true
+// Filtro
+const clientesFiltrados = computed(() => {
+  return clientes.value.filter(c => {
+    const nomeMatch = c.nome.toLowerCase().includes(filtroNome.value.toLowerCase())
+    const cpfMatch = c.cpf.includes(filtroCpf.value)
+    return nomeMatch && cpfMatch
+  })
+})
+
+const filtrarClientes = () => { /* já filtra com computed */ }
+
+const resetarFiltro = () => {
+  filtroNome.value = ''
+  filtroCpf.value = ''
 }
 
-const resetForm = () => {
-  client.value = {
+// Validações
+const validarCpf = () => {
+  const cpf = cliente.cpf.replace(/\D/g, '')
+  if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) {
+    alert('CPF inválido!')
+    return false
+  }
+  return true
+}
+
+const validarDataNascimento = () => {
+  if (!cliente.dataNascimento) {
+    alert('Data de nascimento obrigatória!')
+    return false
+  }
+  return true
+}
+
+// Busca CEP no ViaCEP
+const buscarCep = async () => {
+  try {
+    const response = await axios.get(`https://viacep.com.br/ws/${cliente.endereco.cep}/json/`)
+    const data = response.data
+    if (data.erro) {
+      alert('CEP não encontrado!')
+      return
+    }
+    cliente.endereco.logradouro = data.logradouro
+    cliente.endereco.bairro = data.bairro
+    cliente.endereco.cidade = data.localidade
+    cliente.endereco.uf = data.uf
+  } catch (error) {
+    alert('Erro ao buscar CEP!')
+  }
+}
+
+// Limpa o formulário
+const resetarFormulario = () => {
+  Object.assign(cliente, {
+    clienteId: 0, 
     cpf: '',
     nome: '',
+    rg: '',
+    dataExpedicao: '',
+    orgaoExpedicao: '',
     dataNascimento: '',
     sexo: '',
+    estadoCivil: '',
     endereco: {
+      enderecoId: 0, 
       cep: '',
       logradouro: '',
       numero: '',
+      complemento: '',
       bairro: '',
       cidade: '',
       uf: ''
     }
-  }
-  isEdit.value = false
-  showForm.value = false
+  })
+  isEditando.value = false
 }
 
-const filteredClients = computed(() => {
-  return clients.value.filter(client =>
-    client.nome.toLowerCase().includes(filter.value.toLowerCase()) ||
-    client.cpf.includes(filter.value)
-  )
+onMounted(() => {
+  listarClientes()
 })
 </script>
 
 <style scoped>
-/* Estilos básicos para o layout */
+.clientes-container {
+  background-color: white;
+  width: 100%;
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
 .header {
-  background-color: #A50638;
-  color: white;
-  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.header .logo-clientes {
+  height: 80px;
+  border-radius: 5px;
+  margin-right: 30px; /* Espaço entre a logo e o título */
+}
+
+.header-text {
+  display: flex;
+  flex-direction: column;
   text-align: center;
+  flex: 1; /* Para ocupar o espaço restante e centralizar os textos */
 }
 
-footer {
-  background-color: #A50638;
-  color: white;
-  padding: 10px;
+.header-text h1,
+.header-text h2 {
+  margin: 0;
+  padding: 0;
+}
+
+.footer {
   text-align: center;
+  margin-top: 20px;
+  color: #888;
 }
 
-nav button {
-  margin: 10px;
-  padding: 10px;
-  background-color: #8c0331;
-  color: white;
-  cursor: pointer;
+.clientes-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-button:hover {
-  background-color: #b54d6b;
+form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 20px;
 }
 
-input, select {
-  margin: 5px;
+.form-group {
+  flex: 1 1 48%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group.full-width {
+  flex: 1 1 100%;
+}
+
+.form-group input, .form-group select {
   padding: 8px;
+  font-size: 13px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
   width: 100%;
 }
 
-table {
+form button {
   width: 100%;
+  background-color: #A50638;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+form button:hover {
+  background-color: #ff6600; /* Hover effect */
+}
+
+.filtros {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  justify-content: center; /* Centraliza os botões */
+}
+
+.filtros input {
+  padding: 8px;
+  font-size: 13px;
+  flex: 1 1 45%;
+}
+
+.filtros button {
+  background-color: #A50638;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  flex: 0 1 45%;
+  transition: background-color 0.3s ease;
+}
+
+.filtros button:hover {
+  background-color: #ff6600; /* Hover effect */
+}
+
+.clientes-table {
+  width: 100%;
+  margin-top: 30px;
   border-collapse: collapse;
+  border: 1px solid #ddd;
 }
 
-table th, table td {
+.clientes-table th,
+.clientes-table td {
   padding: 10px;
   text-align: left;
+  border-bottom: 1px solid #ddd;
 }
 
-table tr:nth-child(even) {
-  background-color: #f2f2f2;
+.clientes-table th {
+  background-color: #f7f7f7;
 }
 
-button {
-  background-color: #A50638;
+.clientes-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.clientes-table button {
+  background-color: #ff8c00;
   color: white;
-  padding: 8px 16px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
   cursor: pointer;
+  font-size: 13px;
+  transition: background-color 0.3s ease;
 }
 
-button:hover {
-  background-color: #8c0331;
+.clientes-table button:hover {
+  background-color: #ff6600;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .header .logo-clientes {
+    margin-bottom: 10px;
+  }
+
+  .clientes-container {
+    padding: 15px;
+  }
+
+  .form-group {
+    flex: 1 1 100%;
+  }
+
+  .filtros input, .filtros button {
+    flex: 1 1 100%;
+  }
 }
 </style>

@@ -4,8 +4,4 @@ body {
   font-family: 'Roboto', sans-serif;
   background-color: #A50638;
   margin: 0;
-  display: flex;
-  justify-content: center; 
-  align-items: center;     
-  height: 100vh; 
 }
