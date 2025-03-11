@@ -340,14 +340,14 @@ onMounted(() => {
 .header .logo-clientes {
   height: 80px;
   border-radius: 5px;
-  margin-right: 30px; /* Espaço entre a logo e o título */
+  margin-right: 30px; 
 }
 
 .header-text {
   display: flex;
   flex-direction: column;
   text-align: center;
-  flex: 1; /* Para ocupar o espaço restante e centralizar os textos */
+  flex: 1; 
 }
 
 .header-text h1,
@@ -408,14 +408,14 @@ form button {
 }
 
 form button:hover {
-  background-color: #ff6600; /* Hover effect */
+  background-color: #ff6600; 
 }
 
 .filtros {
   display: flex;
   gap: 15px;
   flex-wrap: wrap;
-  justify-content: center; /* Centraliza os botões */
+  justify-content: center; 
 }
 
 .filtros input {
@@ -437,7 +437,7 @@ form button:hover {
 }
 
 .filtros button:hover {
-  background-color: #ff6600; /* Hover effect */
+  background-color: #ff6600; 
 }
 
 .clientes-table {
