@@ -145,7 +145,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import axios from 'axios'
 
 // Endereço da API
-const API_BASE = 'http://dotnetapis.netservices.fcc.org.br/webapi/testecandidato/v1/Cliente'
+const API_BASE = 'https://extranet.fcc.org.br/webapi/testecandidato/v1/Cliente'
 
 // Cliente e lista
 const cliente = reactive({
@@ -182,6 +182,7 @@ const listarClientes = async () => {
     clientes.value = response.data
   } catch (error) {
     console.error('Erro ao listar clientes:', error)
+    alert('Houve um erro ao buscar os clientes. Tente novamente mais tarde.')
   }
 }
 
@@ -226,13 +227,15 @@ const editarCliente = (c) => {
 
 // Excluir cliente
 const excluirCliente = async (id) => {
-  if (!confirm('Tem certeza que deseja excluir?')) return
+  const isConfirmed = window.confirm('Tem certeza que deseja excluir esse cliente?')
+  if (!isConfirmed) return
   try {
     await axios.delete(`${API_BASE}/Excluir/${id}`)
     alert('Cliente excluído com sucesso!')
     listarClientes()
   } catch (error) {
     console.error('Erro ao excluir cliente:', error)
+    alert('Erro ao excluir cliente. Tente novamente.')
   }
 }
 
@@ -267,6 +270,13 @@ const validarDataNascimento = () => {
     alert('Data de nascimento obrigatória!')
     return false
   }
+  // Verificar se a data não é no futuro
+  const dataNascimento = new Date(cliente.dataNascimento)
+  const hoje = new Date()
+  if (dataNascimento > hoje) {
+    alert('Data de nascimento não pode ser no futuro!')
+    return false
+  }
   return true
 }
 
@@ -276,7 +286,7 @@ const buscarCep = async () => {
     const response = await axios.get(`https://viacep.com.br/ws/${cliente.endereco.cep}/json/`)
     const data = response.data
     if (data.erro) {
-      alert('CEP não encontrado!')
+      alert('CEP não encontrado. Por favor, verifique o CEP informado.')
       return
     }
     cliente.endereco.logradouro = data.logradouro
@@ -284,36 +294,35 @@ const buscarCep = async () => {
     cliente.endereco.cidade = data.localidade
     cliente.endereco.uf = data.uf
   } catch (error) {
-    alert('Erro ao buscar CEP!')
+    alert('Erro ao buscar informações do CEP. Tente novamente.')
   }
 }
 
-// Limpa o formulário
+// Resetar formulário
 const resetarFormulario = () => {
-  Object.assign(cliente, {
-    clienteId: 0, 
-    cpf: '',
-    nome: '',
-    rg: '',
-    dataExpedicao: '',
-    orgaoExpedicao: '',
-    dataNascimento: '',
-    sexo: '',
-    estadoCivil: '',
-    endereco: {
-      enderecoId: 0, 
-      cep: '',
-      logradouro: '',
-      numero: '',
-      complemento: '',
-      bairro: '',
-      cidade: '',
-      uf: ''
-    }
-  })
+  cliente.clienteId = 0
+  cliente.cpf = ''
+  cliente.nome = ''
+  cliente.rg = ''
+  cliente.dataExpedicao = ''
+  cliente.orgaoExpedicao = ''
+  cliente.dataNascimento = ''
+  cliente.sexo = ''
+  cliente.estadoCivil = ''
+  cliente.endereco = {
+    enderecoId: 0,
+    cep: '',
+    logradouro: '',
+    numero: '',
+    complemento: '',
+    bairro: '',
+    cidade: '',
+    uf: ''
+  }
   isEditando.value = false
 }
 
+// Montar clientes na primeira vez
 onMounted(() => {
   listarClientes()
 })
@@ -408,7 +417,7 @@ form button {
 }
 
 form button:hover {
-  background-color: #ff6600; 
+  background-color: #8c0331; 
 }
 
 .filtros {
@@ -437,7 +446,7 @@ form button:hover {
 }
 
 .filtros button:hover {
-  background-color: #ff6600; 
+  background-color: #8c0331; 
 }
 
 .clientes-table {
@@ -463,7 +472,7 @@ form button:hover {
 }
 
 .clientes-table button {
-  background-color: #ff8c00;
+  background-color: #A50638;
   color: white;
   padding: 5px 10px;
   border: none;
@@ -474,7 +483,7 @@ form button:hover {
 }
 
 .clientes-table button:hover {
-  background-color: #ff6600;
+  background-color: #8c0331;
 }
 
 /* Responsividade */
